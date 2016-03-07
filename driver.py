@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+#These are the cascades
 frontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_default.xml')
 altFrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt.xml')
 alt2FrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt2.xml')
