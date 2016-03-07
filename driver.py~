@@ -2,15 +2,16 @@ import numpy as np
 import cv2
 
 frontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_default.xml')
+altFrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt.xml')
+alt2FrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt2.
 eyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_eye.xml')
-righteyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_righteye.xml')
-lefteyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_lefteye.xml')
+rightEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_righteye.xml')
+leftEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_lefteye.xml')
 noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
-rightearCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
-leftearCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')`
+rightEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
+leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')`
 mouthCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_maouth.xml')
 smileCascade = cv2.CascadeClassifier('Cascades/haarcascade_smile.xml')
-
 
 
 img = cv2.imread('cringe.jpg')
