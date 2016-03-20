@@ -1,9 +1,17 @@
 import numpy as np
 import cv2
 
+#These are the cascades
 frontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_default.xml')
 altFrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt.xml')
+<<<<<<< HEAD
 eyeCascade = cv2.CascadeClassifier('Cascades/newEye1.xml')
+=======
+alt2FrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt2.xml')
+eyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_eye.xml')
+rightEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_righteye.xml')
+leftEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_lefteye.xml')
+>>>>>>> master
 noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
 rightEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
 leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')
