@@ -7,9 +7,9 @@ eyeCascade = cv2.CascadeClassifier('Cascades/newEye1.xml')
 noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
 rightEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
 leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')
-mouthCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_maouth.xml')
+mouthCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_mouth.xml')
 
-img = cv2.imread('angelina.jpg')
+img = cv2.imread('girl2.jpg', -1)
 #_______________________________
 # Load and configure dog nose
 #_______________________________
@@ -20,20 +20,32 @@ img = cv2.imread('angelina.jpg')
 #I'M STILL FIXING SOME STUFF
 #------------------------------------------------------!!!!!!!!!!!!!!!!!
 
-img2 = cv2.imread('mustache.png', -1)
+img2 = cv2.imread('lip2.png', -1)
+
+#img3 = cv2.imread('lip2.png', -1)
 #create the mask for the mustache
 img2gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-ret, dog_mask = cv2.threshold(img2gray, 10, 255, cv2.THRESH_BINARY_INV)
-
+#img3gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
+ret, dog_mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_BINARY_INV)
+#ret, eye_mask = cv2.threshold(img3gray, 10, 255, cv2.THRESH_BINARY_INV)
 #cv2.THRESH_BINARY_INV the value for this either 0 or 1.
-#if a pixel value is above 220, it'll be converted to 255. & if it's below 220, it'll be converted to black.
+#if a pixel value is above 250, it'll be converted to 255. & if it's below 250, it'll be converted to black.
 #then this will be flipped around because we are getting the inverse
 dog_mask_inv = cv2.bitwise_not(dog_mask)
+#eye_mask_inv = cv2.bitwise_not(eye_mask)
 # Convert glasses image to BGR
 # and save the original image size (used later when re-sizing the image)
 img2 = img2[:,:,0:3]
+#img3 = img3[:,:,0:3]
 originalDogHeight, originalDogWidth = img2.shape[:2]
+print(originalDogHeight)
+print(originalDogWidth)
+#originalEyeHeight, originalEyeWidth = img3.shape[:2]
+#print(originalEyeHeight)
+#print(originalEyeWidth)
+
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
 #cv2.imwrite('grayversion.jpg', gray)
 faces = frontFaceCascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize =(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
 #(x, y)
@@ -41,7 +53,7 @@ faces = frontFaceCascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors 
 #h stands for height
 for(x, y, w, h) in faces:
 
-	cv2.rectangle(img, (x, y), (x+w, y+h), (225, 0, 0), 2)
+	#cv2.rectangle(img, (x, y), (x+w, y+h), (225, 0, 0), 2)
 	
 	#roi stands for region of interest. It's where you want to work on.
 	
@@ -57,23 +69,27 @@ for(x, y, w, h) in faces:
 	nose = noseCascade.detectMultiScale(roi_gray)
 	mouth = mouthCascade.detectMultiScale(roi_grayMouthArea)
 	
-	
-	for(x3, y3, w3, h3) in eyesPair:
-		#cv2.rectangle(roi_color, (x3, y3), (x3+w3, y3+h3), (225, 0, 0), 2)
+	for(x2, y2, w2, h2) in eyesPair:
 		#below is where CARLOS is supposed to work:
+		
+		break
 		
 	for(x4, y4, w4, h4) in mouth:
 		#cv2.rectangle(roi_color, (x4, y4), (x4+w4, y4+h4), (0, 0, 225), 2)
 		#below is where NICOLAS is supposed to work:
 		#except you need to keep changing your cascade until you find a more accurate one.
 		
+		break
+
 	for(x2, y2, w2, h2) in nose: 
 		#cv2.rectangle(roi_color, (x2, y2), (x2+w2, y2+h2), (0, 225, 0), 2)
-		
+		y2 = y2+20
+		x2 = x2+5
 		#The dog image should be 3 times the width of the nose
-		dogWidth = 3 * w2
+		dogWidth = 2*w2
 		dogHeight = dogWidth * originalDogHeight / originalDogWidth
-		
+		print(dogWidth)
+		print(dogHeight)
 		#center the dog nose on the bottom of the nose
 		xn1 = x2 -(dogWidth/4)
 		xn2 = x2 + w2 + (dogWidth/4)
@@ -86,7 +102,7 @@ for(x, y, w, h) in faces:
 			yn1 = 0
 		if xn2 > 640:
 			xn2 = w2
-		if y2 > 360:
+		if y2 > 320:
 			yn2 = h2
 		
 		#Re-canculate the width and height of the dog's nose image
@@ -106,13 +122,13 @@ for(x, y, w, h) in faces:
 		
 		#roi_bg contains the original image only where the dog nose is not in the region that is the size of the dog nose
 		roi_bg = cv2.bitwise_and(roi_nose, roi_nose, mask = mask_inv)
+		cv2.imwrite('roiBG.png', roi_bg)
 		#roi_fg contains the image of the dog nose only where the dog nose is
 		roi_fg = cv2.bitwise_and(dogNose, dogNose, mask=mask)
-		
+		cv2.imwrite('roiFG.png', roi_fg)
 		#join the roi_bg and roi_fg
 		dst = cv2.add(roi_bg, roi_fg)
 		roi_color[yn1:yn2, xn1:xn2] = dst
 		
 		break
-cv2.imshow('Hello', img)
 cv2.imwrite('newImg.png', img)

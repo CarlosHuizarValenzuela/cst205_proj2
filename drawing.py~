@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 
 img = cv2.imread("person.jpg")
-img2 = cv2.imread("carnation.jpg")
+img2 = cv2.imread("pig.png")
 
 """
 px = img[55, 55]
@@ -69,3 +69,48 @@ img[0:rows, 0:cols] = dst
 cv2.imwrite('res.png', img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()	
+
+'''
+eyeWidth = 3 * w2
+		eyeHeight = eyeWidth * originalEyeHeight / originalEyeWidth
+		
+		#center the dog nose on the bottom of the nose
+		xn1 = x2 -(eyeWidth/4)
+		xn2 = x2 + w2 + (eyeWidth/4)
+		yn1 = y2 + h2 - (eyeHeight/2)
+		yn2 = y2 + h2 + (eyeHeight/2)
+		
+		if xn1 < 0:
+			xn1 = 0
+		if yn1 < 0:
+			yn1 = 0
+		if xn2 > 640:
+			xn2 = w2
+		if y2 > 360:
+			yn2 = h2
+		
+		#Re-canculate the width and height of the dog's nose image
+		eyeWidth = xn2 - xn1
+		eyeHeight = yn2 - yn1
+		
+		#Re-size the original image and the masks to the dog's nose's original sizes
+		#calculated above
+		eye = cv2.resize(img3, (eyeWidth, eyeHeight), interpolation = cv2.INTER_AREA)
+		mask = cv2.resize(eye_mask, (eyeWidth, eyeHeight), interpolation = cv2.INTER_AREA)
+		mask_inv = cv2.resize(eye_mask_inv, (eyeWidth, eyeHeight), interpolation = cv2.INTER_AREA)
+		print(mask.size)
+		
+		#take ROI for dog nose from background equal to size of ROI of dog nose image
+		roi_nose = roi_color[xn1:xn2, yn1:yn2]
+		print(roi_nose.size)
+		
+		#roi_bg contains the original image only where the dog nose is not in the region that is the size of the dog nose
+		roi_bg = cv2.bitwise_and(roi_nose, roi_nose, mask = mask_inv)
+		#roi_fg contains the image of the dog nose only where the dog nose is
+		roi_fg = cv2.bitwise_and(eye, eye, mask=mask)
+		
+		#join the roi_bg and roi_fg
+		dst = cv2.add(roi_bg, roi_fg)
+		roi_color[yn1:yn2, xn1:xn2] = dst
+		
+'''
