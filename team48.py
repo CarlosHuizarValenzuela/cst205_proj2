@@ -1,0 +1,351 @@
+import numpy as np
+import cv2
+'''
+By: Nicole Hipolito, Nicolas Moore, Carlos Huizar-Valenzuela
+Face Recognition & Image Filtering Project.
+'''
+frontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_default.xml')
+altFrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt.xml')
+eyeCascade = cv2.CascadeClassifier('Cascades/newEye1.xml')
+noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
+
+
+funny = cv2.imread('Images/funny.png', -1)
+scary = cv2.imread('Images/scary.png', -1)
+kanye = cv2.imread('Images/Kanye.png', -1)
+kappa = cv2.imread('Images/kappa.png', -1)
+lips = cv2.imread('Images/lips.png', -1)
+zelda = cv2.imread('Images/zelda.png', -1)
+pokemon = cv2.imread('Images/pokemon.png', -1)
+#laplacian function
+#laplacian detects inward and outward edges.
+def laplacian(frame):
+    laplacian = cv2.Laplacian(frame, cv2.CV_64F)
+    cv2.imshow('Video', laplacian)
+
+#sobelx function
+#emphasizes edges along the x axis.
+def sobelx(frame):
+    sobelx = cv2.Sobel(frame, cv2.CV_64F, 1, 0, ksize = 5)# the 3rd and 4th arguments are x and y values respectively.
+    #ksize is the size of a kernal that the algorithm uses.
+    cv2.imshow('Video', sobelx)
+#sobely function
+#emphasizes edges along the y axis.
+def sobely(frame):
+    sobely = cv2.Sobel(frame, cv2.CV_64F, 0, 1, ksize = 5)# the 3rd and 4th arguments are x and y values respectively.
+    cv2.imshow('Video', sobely)
+
+#Edge detection using Canny algorithm.
+#emphasizes smooth outer edges and minimizes noise with the given hardcoded values.
+def canny(frame):
+    canny = cv2.Canny(frame, 150,150)#the lower these values, the more noise in the image.
+    cv2.imshow('Video', canny)
+
+def sticker(frame, picture, gray):
+    faces = frontFaceCascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize =(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+    #(x, y) are the starting coordinates
+    #create the mask for the image
+    mask = picture[:, :, 3]
+    #create the inverted mask for the image
+    mask_inv = cv2.bitwise_not(mask)
+    #convert the inverted mask for the image and save the original image size(used later when re-sizing)
+    picture = picture[:,:,0:3]
+    originalHeight, originalWidth = picture.shape[:2]
+
+    #iterate over each face found
+    for(x, y, w, h) in faces:
+
+        #cv2.rectangle(frame, (x, y), (x+w, y+h), (225, 0, 0), 2)
+        
+        #roi stands for region of interest. It's where you want to work on.
+        #the gray-scale of the original image:
+        roi_gray = gray[y:y+h, x:x+w]
+        #the colored version of the original image:
+        roi_color = frame[y:y+h, x:x+w]
+        #returns cordinates, width, and height at where you want to work with
+        nose = noseCascade.detectMultiScale(roi_gray)
+        for(x2, y2, w2, h2) in nose: 
+            #cv2.rectangle(roi_color, (x2, y2), (x2+w2, y2+h2), (0, 225, 0), 2)
+            #The image should be 7 times the width of the nose
+            width = 8*w2
+            height = width * originalHeight / originalWidth
+            #center the image on the bottom of the nose
+            xn1 = x2 -(width/4)
+            xn2 = x2 + w2 + (width/4)
+            yn1 = y2 + h2 - (height/2)
+            yn2 = y2 + h2 + (height/2)
+        
+            if xn1 < 0:
+                xn1 = 0
+            if yn1 < 0:
+                yn1 = 0
+            if xn2 > w2:
+                xn2 = w
+            if y2 > h2:
+                yn2 = h
+        
+            #Re-canculate the width and height of the dog's nose image
+            width = xn2 - xn1
+            height = yn2 - yn1
+        
+            #Re-size the original image and the masks to the dog's nose's original sizes
+            #calculated above
+            if(width >= 0 and height >= 0):
+                changedPic = cv2.resize(picture, (width, height), interpolation = cv2.INTER_AREA)
+                mask = cv2.resize(mask, (width, height), interpolation = cv2.INTER_AREA)
+                mask_inv = cv2.resize(mask_inv, (width, height), interpolation = cv2.INTER_AREA)
+                #print("Mask Size: ", mask.size)
+            
+                #take ROI for img from video equal to size of ROI of image
+                roi = roi_color[yn1:yn2, xn1:xn2]
+                #print("roi Size: ", roi.size)
+                
+                #roi_bg contains the original frame only where the image is not in the region of interest
+                #the "background":
+                roi_bg = cv2.bitwise_and(roi, roi, mask = mask_inv)
+                #cv2.imwrite('roiBG.png', roi_bg)
+                
+                #roi_fg contains the image only where the image is actually seen.
+                #the "foreground":
+                roi_fg = cv2.bitwise_and(changedPic, changedPic, mask=mask)
+                #cv2.imwrite('roiFG.png', roi_fg)
+                #join the roi_bg and roi_fg
+                dst = cv2.add(roi_bg, roi_fg)
+                roi_color[yn1:yn2, xn1:xn2] = dst
+            break
+def lipSticker(frame, picture, gray):
+    faces = frontFaceCascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize =(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+    #(x, y) are the starting coordinates
+    #create the mask for the lip image
+    mask = picture[:, :, 3]
+    #create the inverted mask for the lip image
+    mask_inv = cv2.bitwise_not(mask)
+    #convert the inverted mask for the lip image and save the original image size(used later when re-sizing)
+    picture = picture[:,:,0:3]
+    originalHeight, originalWidth = picture.shape[:2]
+
+    #iterate over each face found
+    for(x, y, w, h) in faces:
+
+        #cv2.rectangle(frame, (x, y), (x+w, y+h), (225, 0, 0), 2)
+        
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = frame[y:y+h, x:x+w]
+        nose = noseCascade.detectMultiScale(roi_gray)
+        for(x2, y2, w2, h2) in nose: 
+            #cv2.rectangle(roi_color, (x2, y2), (x2+w2, y2+h2), (0, 225, 0), 2)
+
+            #changing where the starting point for the image is:
+            y2 = y2-10
+            x2 = x2-50
+            
+            width = w2
+            height = width * originalHeight / originalWidth
+            xn1 = x2 -(width/4)
+            xn2 = x2 + w2 + (width/4)
+            yn1 = y2 + h2 - (height/2)
+            yn2 = y2 + h2 + (height/2)
+        
+            if xn1 < 0:
+                xn1 = 0
+            if yn1 < 0:
+                yn1 = 0
+            if xn2 > w2:
+                xn2 = w
+            if y2 > h2:
+                yn2 = h
+        
+            width = xn2 - xn1
+            height = yn2 - yn1
+        
+            if(width >= 0 and height >= 0):
+                changedPic = cv2.resize(picture, (width, height), interpolation = cv2.INTER_AREA)
+                mask = cv2.resize(mask, (width, height), interpolation = cv2.INTER_AREA)
+                mask_inv = cv2.resize(mask_inv, (width, height), interpolation = cv2.INTER_AREA)
+                #print("Mask Size: ", mask.size)
+            
+                roi = roi_color[yn1:yn2, xn1:xn2]
+                #print("Roi Size: ", roi_nose.size)
+                
+                roi_bg = cv2.bitwise_and(roi, roi, mask = mask_inv)
+                #cv2.imwrite('roiBG.png', roi_bg)
+                roi_fg = cv2.bitwise_and(changedPic, changedPic, mask=mask)
+                #cv2.imwrite('roiFG.png', roi_fg)
+                dst = cv2.add(roi_bg, roi_fg)
+                roi_color[yn1:yn2, xn1:xn2] = dst
+            break
+'''
+def hatSticker(frame, picture, gray):
+    faces = frontFaceCascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize =(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+    #(x, y) are the starting coordinates
+    #create the mask for the lip image
+    mask = picture[:, :, 3]
+    #create the inverted mask for the lip image
+    mask_inv = cv2.bitwise_not(mask)
+    #convert the inverted mask for the lip image and save the original image size(used later when re-sizing)
+    picture = picture[:,:,0:3]
+    originalHeight, originalWidth = picture.shape[:2]
+
+    #iterate over each face found
+    for(x2, y2, w2, h2) in faces:
+
+        #cv2.rectangle(frame, (x, y), (x+w, y+h), (225, 0, 0), 2)
+        
+        roi_gray = gray[y2:y2+h2, x2:x2+w2]
+        roi_color = frame[y2:y2+h2, x2:x2+w2]
+        nose = noseCascade.detectMultiScale(roi_gray)
+        width = w2*2
+        height = width * originalHeight / originalWidth
+        xn1 = x2 - 15
+        yn1 = y2 - h2
+        xn2 = xn1 + w2 + 30
+        yn2 = yn1 + h2
+    
+        if xn1 < 0:
+            xn1 = 0
+        if yn1 < 0:
+            yn1 = 0
+        if xn2 > w2:
+            xn2 = w2
+        if y2 > h2:
+            yn2 = h2
+        
+        width = xn2 - xn1
+        height = yn2 - yn1
+        
+        if(width >= 0 and height >= 0):
+            changedPic = cv2.resize(picture, (width, height), interpolation = cv2.INTER_AREA)
+            mask = cv2.resize(mask, (width, height), interpolation = cv2.INTER_AREA)
+            mask_inv = cv2.resize(mask_inv, (width, height), interpolation = cv2.INTER_AREA)
+            print("Mask Size: ", mask.size)
+        
+            roi = roi_color[y2:height, x2:width]
+            #print("Roi Size: ", roi.size)
+            
+            roi_bg = cv2.bitwise_and(roi, roi, mask = mask_inv)
+            #cv2.imwrite('roiBG.png', roi_bg)
+            roi_fg = cv2.bitwise_and(changedPic, changedPic, mask=mask)
+            #cv2.imwrite('roiFG.png', roi_fg)
+            dst = cv2.add(roi_bg, roi_fg)
+            roi_color[yn1:yn2, xn1:xn2] = dst
+        break
+    '''
+        
+fourcc = cv2.cv.CV_FOURCC(*'XVID')
+out = cv2.VideoWriter('recent.mp4', fourcc, 20.0, (640, 480))
+video_capture = cv2.VideoCapture(0)
+print("Hello User!\n")
+while True:
+    print("Enter letter corresponding to what you want\n")
+    print("[Stickers]")
+    print("\t [d] = disguise")
+    print("\t [s] = scary")
+    print("\t [k] = Kanye")
+    print("\t [g] = Kappa Guy")
+    print("\t [z] = Link's Tiki Mask")
+    #print("\t [h] = Ash Ketchum's Hat")
+    print("\t [j] = Kylie Jenner Lips\n")
+    print("[Filters]")
+    print("\t [c] = canny")
+    print("\t [l] = laplacian")
+    print("\t [x] = sobelX")
+    print("\t [y] = sobelY")
+    print("[q] = quit")
+    
+    answer = raw_input("Choice: ")
+    if(answer == 'd'):
+        while True:
+            # Capture video feed
+            ret, frame = video_capture.read()
+            # Gray scale of the video feed. Gray makes it easier to manipulate
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sticker(frame, funny, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 's'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sticker(frame, scary, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'k'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sticker(frame, kanye, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'g'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sticker(frame, kappa, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'z'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sticker(frame, zelda, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'h'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            hatSticker(frame, pokemon, gray)
+            out.write(frame)
+            cv2.imshow('Video', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'c'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            canny(frame)
+            out.write(frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'l'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            laplacian(frame)
+            out.write(frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'x'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sobelx(frame)
+            out.write(frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'y'):
+        while True:
+            ret, frame = video_capture.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sobely(frame)
+            out.write(frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    elif(answer == 'q'):
+        break
+
+
+            
+video_capture.release()
+out.release()
+cv2.destroyAllWindows()
