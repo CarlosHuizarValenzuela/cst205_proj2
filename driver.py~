@@ -1,27 +1,18 @@
 import numpy as np
 import cv2
 
+#These are the cascades
 frontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_default.xml')
 altFrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt.xml')
-<<<<<<< HEAD
 eyeCascade = cv2.CascadeClassifier('Cascades/newEye1.xml')
-noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
-rightEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
-leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')
-<<<<<<< HEAD
-=======
 alt2FrontFaceCascade = cv2.CascadeClassifier('Cascades/haarcascade_frontalface_alt2.xml')
 eyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_eye.xml')
 rightEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_righteye.xml')
 leftEyeCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_lefteye.xml')
 noseCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_nose.xml')
 rightEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_rightear.xml') 
-leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')`
->>>>>>> master
-mouthCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_maouth.xml')
-=======
+leftEarCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_leftear.xml')
 mouthCascade = cv2.CascadeClassifier('Cascades/haarcascade_mcs_mouth.xml')
->>>>>>> 07d3ac578069915b50162c8d9869ecd7dedfd975
 
 img = cv2.imread('girl2.jpg', -1)
 #_______________________________
@@ -58,10 +49,6 @@ print(originalDogWidth)
 #print(originalEyeHeight)
 #print(originalEyeWidth)
 
-<<<<<<< HEAD
-=======
-img = cv2.imread('cringe.jpg')
->>>>>>> master
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 #cv2.imwrite('grayversion.jpg', gray)
